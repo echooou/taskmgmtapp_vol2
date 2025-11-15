@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutList, Plus, Calendar, Settings } from 'lucide-react';
+import { useTranslation } from '../i18n/useTranslation';
 
 interface LayoutProps {
   children: ReactNode;
@@ -8,12 +9,13 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
+  const { t } = useTranslation();
 
   const navItems = [
-    { path: '/', label: 'タスク一覧', icon: LayoutList },
-    { path: '/new', label: '新規登録', icon: Plus },
-    { path: '/calendar', label: 'カレンダー', icon: Calendar },
-    { path: '/settings', label: '設定', icon: Settings },
+    { path: '/', label: t('taskList'), icon: LayoutList },
+    { path: '/new', label: t('newTask'), icon: Plus },
+    { path: '/calendar', label: t('calendar'), icon: Calendar },
+    { path: '/settings', label: t('settings'), icon: Settings },
   ];
 
   return (
@@ -21,7 +23,7 @@ export default function Layout({ children }: LayoutProps) {
       <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900">My task app</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('taskManagement')}</h1>
             <nav className="flex space-x-4">
               {navItems.map((item) => {
                 const Icon = item.icon;

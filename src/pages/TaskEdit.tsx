@@ -1,20 +1,23 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTaskStore } from '../store/taskStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { useTranslation } from '../i18n/useTranslation';
-import { Task, TaskStatus, TaskCategory, TaskProduct } from '../types/task';
+import { TaskStatus, TaskCategory, TaskProduct } from '../types/task';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Select } from '../components/ui/select';
 import { Button } from '../components/ui/button';
 
-export default function TaskNew() {
+export default function TaskEdit() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { addTask, tasks } = useTaskStore();
+  const { getTaskById, updateTask, tasks } = useTaskStore();
   const { categories } = useSettingsStore();
+  
+  const task = id ? getTaskById(id) : null;
   
   const [formData, setFormData] = useState({
     name: '',
@@ -29,24 +32,37 @@ export default function TaskNew() {
     memo: '',
   });
 
+  useEffect(() => {
+    if (task) {
+      setFormData({
+        name: task.name,
+        customer: task.customer,
+        category: task.category,
+        product: task.product || '',
+        startDate: task.startDate,
+        dueDate: task.dueDate,
+        status: task.status,
+        workload: task.workload,
+        relatedTasks: task.relatedTasks,
+        memo: task.memo,
+      });
+    } else if (id) {
+      // タスクが見つからない場合は一覧に戻る
+      navigate('/');
+    }
+  }, [task, id, navigate]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!id) return;
+    
     try {
-      const newTask: Task = {
-        id: crypto.randomUUID(),
-        ...formData,
-        priority: tasks.length,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      console.log('Creating new task:', newTask);
-      addTask(newTask);
-      console.log('Task created successfully, navigating to home');
+      updateTask(id, formData);
+      console.log('Task updated successfully, navigating to home');
       navigate('/');
     } catch (error) {
-      console.error('Error creating task:', error);
+      console.error('Error updating task:', error);
     }
   };
 
@@ -61,11 +77,15 @@ export default function TaskNew() {
     setFormData({ ...formData, relatedTasks: selected });
   };
 
+  if (!task) {
+    return null;
+  }
+
   return (
     <div className="max-w-3xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle>{t('newTaskRegistration')}</CardTitle>
+          <CardTitle>{t('editTaskTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -169,10 +189,11 @@ export default function TaskNew() {
               <Select
                 multiple
                 size={5}
+                value={formData.relatedTasks}
                 onChange={handleRelatedTasksChange}
                 className="h-auto"
               >
-                {tasks.map((task) => (
+                {tasks.filter(t => t.id !== id).map((task) => (
                   <option key={task.id} value={task.id}>
                     {task.name}
                   </option>
@@ -196,7 +217,7 @@ export default function TaskNew() {
                 {t('cancel')}
               </Button>
               <Button type="submit">
-                {t('register')}
+                {t('update')}
               </Button>
             </div>
           </form>

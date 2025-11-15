@@ -1,11 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export type Language = 'ja' | 'en';
+
 interface SettingsState {
   categories: string[];
+  language: Language;
   addCategory: (category: string) => void;
   removeCategory: (category: string) => void;
   resetCategories: () => void;
+  setLanguage: (language: Language) => void;
 }
 
 const defaultCategories = ['公共', '製薬', 'GCIT', 'Downstream', 'Activity', 'その他'];
@@ -14,6 +18,7 @@ export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       categories: defaultCategories,
+      language: 'ja' as Language,
       
       addCategory: (category) => set((state) => ({
         categories: state.categories.includes(category) 
@@ -26,6 +31,8 @@ export const useSettingsStore = create<SettingsState>()(
       })),
       
       resetCategories: () => set({ categories: defaultCategories }),
+      
+      setLanguage: (language) => set({ language }),
     }),
     {
       name: 'settings-storage',

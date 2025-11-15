@@ -2,11 +2,14 @@ export type TaskStatus = '未着手' | '進行中' | '完了' | '保留';
 
 export type TaskCategory = '公共' | '製薬' | 'GCIT' | 'Downstream' | 'Activity' | 'その他' | string;
 
+export type TaskProduct = 'Copilot Studio' | 'Power Apps' | 'Power Automate' | 'PAD' | 'Power Pages' | 'Power Platform' | '';
+
 export interface Task {
   id: string;
   name: string;
   customer: string;
   category: TaskCategory;
+  product: TaskProduct; // 製品
   startDate: string;
   dueDate: string;
   status: TaskStatus;

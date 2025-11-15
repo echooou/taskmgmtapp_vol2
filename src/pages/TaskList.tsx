@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTaskStore } from '../store/taskStore';
+import { useTranslation } from '../i18n/useTranslation';
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -71,6 +73,8 @@ function SortableTaskItem({ task, onSelect, isSelected }: SortableTaskItemProps)
 }
 
 export default function TaskList() {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   const { tasks, reorderTasks, selectedTaskId, setSelectedTask, getTaskById, deleteTask } = useTaskStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -113,20 +117,20 @@ export default function TaskList() {
     <div className="flex gap-6">
       <div className={`flex-1 transition-all ${sidebarOpen ? 'mr-96' : ''}`}>
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-4">タスク一覧</h2>
+          <h2 className="text-2xl font-bold mb-4">{t('taskList')}</h2>
           <div className="grid grid-cols-7 gap-4 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg text-sm font-medium text-gray-700">
-            <div className="col-span-2 pl-11">タスク名</div>
-            <div>顧客</div>
-            <div>ステータス</div>
-            <div>カテゴリ</div>
-            <div>期間</div>
-            <div>工数</div>
+            <div className="col-span-2 pl-11">{t('taskName')}</div>
+            <div>{t('customer')}</div>
+            <div>{t('status')}</div>
+            <div>{t('category')}</div>
+            <div>{t('period')}</div>
+            <div>{t('workload')}</div>
           </div>
         </div>
 
         {tasks.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            タスクがありません。新規登録から追加してください。
+            {t('noTasks')}
           </div>
         ) : (
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -147,7 +151,7 @@ export default function TaskList() {
       {sidebarOpen && selectedTask && (
         <div className="fixed right-0 top-0 h-full w-96 bg-gradient-to-b from-blue-50/95 to-purple-50/95 backdrop-blur-md shadow-xl border-l border-blue-100 p-6 overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold">タスク詳細</h3>
+            <h3 className="text-xl font-bold">{t('taskDetails')}</h3>
             <button onClick={handleCloseSidebar} className="text-gray-500 hover:text-gray-700">
               <X className="h-6 w-6" />
             </button>
@@ -156,44 +160,44 @@ export default function TaskList() {
           <Card>
             <CardContent className="space-y-4 pt-6">
               <div>
-                <label className="text-sm font-medium text-gray-500">タスク名</label>
+                <label className="text-sm font-medium text-gray-500">{t('taskName')}</label>
                 <p className="mt-1 text-base">{selectedTask.name}</p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-500">顧客</label>
+                <label className="text-sm font-medium text-gray-500">{t('customer')}</label>
                 <p className="mt-1 text-base">{selectedTask.customer}</p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-500">カテゴリ</label>
+                <label className="text-sm font-medium text-gray-500">{t('category')}</label>
                 <p className="mt-1 text-base">{selectedTask.category}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">開始日</label>
+                  <label className="text-sm font-medium text-gray-500">{t('startDate')}</label>
                   <p className="mt-1 text-base">{selectedTask.startDate}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">終了予定日</label>
+                  <label className="text-sm font-medium text-gray-500">{t('dueDate')}</label>
                   <p className="mt-1 text-base">{selectedTask.dueDate}</p>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-500">ステータス</label>
+                <label className="text-sm font-medium text-gray-500">{t('status')}</label>
                 <p className="mt-1 text-base">{selectedTask.status}</p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-500">工数</label>
-                <p className="mt-1 text-base">{selectedTask.workload}時間</p>
+                <label className="text-sm font-medium text-gray-500">{t('workload')}</label>
+                <p className="mt-1 text-base">{selectedTask.workload}{t('hours')}</p>
               </div>
 
               {selectedTask.relatedTasks.length > 0 && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">関連タスク</label>
+                  <label className="text-sm font-medium text-gray-500">{t('relatedTasks')}</label>
                   <div className="mt-1 space-y-1">
                     {selectedTask.relatedTasks.map((taskId) => {
                       const relatedTask = getTaskById(taskId);
@@ -209,14 +213,17 @@ export default function TaskList() {
 
               {selectedTask.memo && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">メモ</label>
+                  <label className="text-sm font-medium text-gray-500">{t('memo')}</label>
                   <p className="mt-1 text-base whitespace-pre-wrap">{selectedTask.memo}</p>
                 </div>
               )}
 
-              <div className="pt-4">
+              <div className="pt-4 space-y-2">
+                <Button variant="outline" className="w-full" onClick={() => navigate(`/task/edit/${selectedTaskId}`)}>
+                  {t('editTask')}
+                </Button>
                 <Button variant="destructive" className="w-full" onClick={handleDeleteTask}>
-                  タスクを削除
+                  {t('deleteTask')}
                 </Button>
               </div>
             </CardContent>
