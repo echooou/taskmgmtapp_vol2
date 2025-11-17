@@ -44,12 +44,13 @@ function SortableTaskItem({ task, onSelect, isSelected }: SortableTaskItemProps)
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white/80 backdrop-blur-sm border border-blue-100 rounded-lg p-4 mb-3 cursor-pointer transition-all hover:shadow-lg hover:bg-white ${
+      className={`bg-white/80 backdrop-blur-sm border border-blue-100 rounded-lg p-3 md:p-4 mb-3 cursor-pointer transition-all hover:shadow-lg hover:bg-white ${
         isSelected ? 'ring-2 ring-blue-300 shadow-lg' : ''
       }`}
       onClick={() => onSelect(task.id)}
     >
-      <div className="flex items-center gap-3">
+      {/* Desktop Layout */}
+      <div className="hidden md:flex items-center gap-3">
         <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
           <GripVertical className="h-5 w-5 text-gray-400" />
         </div>
@@ -66,6 +67,26 @@ function SortableTaskItem({ task, onSelect, isSelected }: SortableTaskItemProps)
             {task.startDate} 〜 {task.dueDate}
           </div>
           <div className="text-sm text-gray-600">{task.workload}h</div>
+        </div>
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="md:hidden space-y-2">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="font-medium text-base mb-1">{task.name}</div>
+            <div className="text-sm text-gray-600">{task.customer}</div>
+          </div>
+          <span className={`px-2 py-1 rounded-full text-xs whitespace-nowrap ml-2 ${getStatusColor(task.status)}`}>
+            {task.status}
+          </span>
+        </div>
+        <div className="flex items-center gap-3 text-sm text-gray-600">
+          <span className="bg-blue-50 px-2 py-1 rounded text-xs">{task.category}</span>
+          <span className="text-xs">{task.workload}h</span>
+        </div>
+        <div className="text-xs text-gray-500">
+          {task.startDate} 〜 {task.dueDate}
         </div>
       </div>
     </div>
@@ -115,10 +136,11 @@ export default function TaskList() {
 
   return (
     <div className="flex gap-6">
-      <div className={`flex-1 transition-all ${sidebarOpen ? 'mr-96' : ''}`}>
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-4">{t('taskList')}</h2>
-          <div className="grid grid-cols-7 gap-4 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg text-sm font-medium text-gray-700">
+      <div className={`flex-1 transition-all ${sidebarOpen ? 'md:mr-96' : ''}`}>
+        <div className="mb-4 md:mb-6">
+          <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">{t('taskList')}</h2>
+          {/* Desktop Header */}
+          <div className="hidden md:grid grid-cols-7 gap-4 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg text-sm font-medium text-gray-700">
             <div className="col-span-2 pl-11">{t('taskName')}</div>
             <div>{t('customer')}</div>
             <div>{t('status')}</div>
@@ -149,7 +171,7 @@ export default function TaskList() {
       </div>
 
       {sidebarOpen && selectedTask && (
-        <div className="fixed right-0 top-0 h-full w-96 bg-gradient-to-b from-blue-50/95 to-purple-50/95 backdrop-blur-md shadow-xl border-l border-blue-100 p-6 overflow-y-auto">
+        <div className="fixed inset-0 md:right-0 md:left-auto md:top-0 md:h-full md:w-96 bg-gradient-to-b from-blue-50/95 to-purple-50/95 backdrop-blur-md shadow-xl md:border-l border-blue-100 p-4 md:p-6 overflow-y-auto z-50">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-bold">{t('taskDetails')}</h3>
             <button onClick={handleCloseSidebar} className="text-gray-500 hover:text-gray-700">

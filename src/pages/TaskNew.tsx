@@ -63,7 +63,7 @@ export default function TaskNew() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <Card>
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
         <CardHeader>
           <CardTitle>{t('newTaskRegistration')}</CardTitle>
         </CardHeader>

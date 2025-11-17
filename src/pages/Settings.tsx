@@ -52,10 +52,10 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <h2 className="text-2xl font-bold">{t('settings')}</h2>
+    <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
+      <h2 className="text-xl md:text-2xl font-bold">{t('settings')}</h2>
 
-      <Card>
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
         <CardHeader>
           <CardTitle>{t('languageSettings')}</CardTitle>
         </CardHeader>
@@ -75,9 +75,9 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
             <CardTitle>{t('categoryManagement')}</CardTitle>
             <Button
               variant="outline"
@@ -118,7 +118,7 @@ export default function Settings() {
           {/* カテゴリ一覧 */}
           <div>
             <label className="block text-sm font-medium mb-3">{t('registeredCategories')} ({categories.length}{t('items')})</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {categories.map((category) => (
                 <div
                   key={category}

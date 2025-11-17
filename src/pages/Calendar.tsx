@@ -52,27 +52,27 @@ export default function Calendar() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">カレンダー</h2>
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
-            <ChevronLeft className="h-4 w-4" />
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+        <h2 className="text-xl md:text-2xl font-bold">カレンダー</h2>
+        <div className="flex items-center gap-2 md:gap-4">
+          <Button variant="outline" size="icon" onClick={handlePreviousMonth} className="h-8 w-8 md:h-10 md:w-10">
+            <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
           </Button>
-          <span className="text-lg font-medium min-w-[200px] text-center">
+          <span className="text-base md:text-lg font-medium min-w-[140px] md:min-w-[200px] text-center">
             {format(currentDate, 'yyyy年 M月', { locale: ja })}
           </span>
-          <Button variant="outline" size="icon" onClick={handleNextMonth}>
-            <ChevronRight className="h-4 w-4" />
+          <Button variant="outline" size="icon" onClick={handleNextMonth} className="h-8 w-8 md:h-10 md:w-10">
+            <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1 md:gap-2">
         {['日', '月', '火', '水', '木', '金', '土'].map((day, index) => (
           <div
             key={day}
-            className={`text-center font-medium py-2 ${
+            className={`text-center font-medium py-1 md:py-2 text-xs md:text-sm ${
               index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : ''
             }`}
           >
@@ -90,33 +90,49 @@ export default function Calendar() {
             <div
               key={index}
               onClick={() => handleDateClick(day)}
-              className={`min-h-[100px] p-2 border border-blue-100 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+              className={`min-h-[60px] md:min-h-[100px] p-1 md:p-2 border border-blue-100 rounded-md md:rounded-lg cursor-pointer transition-all hover:shadow-md ${
                 !isCurrentMonth ? 'bg-blue-50/30 text-gray-400' : 'bg-white/80 backdrop-blur-sm'
-              } ${isToday ? 'ring-2 ring-purple-300 shadow-md' : ''} ${
+              } ${isToday ? 'ring-1 md:ring-2 ring-purple-300 shadow-md' : ''} ${
                 isSelected ? 'bg-gradient-to-br from-blue-50 to-purple-50' : ''
               }`}
             >
-              <div className={`text-sm font-medium mb-1 ${
+              <div className={`text-xs md:text-sm font-medium mb-0.5 md:mb-1 ${
                 index % 7 === 0 ? 'text-red-600' : index % 7 === 6 ? 'text-blue-600' : ''
               }`}>
                 {format(day, 'd')}
               </div>
-              <div className="space-y-1">
-                {dayTasks.slice(0, 3).map((task) => (
-                  <div
-                    key={task.id}
-                    className="text-xs px-1 py-0.5 rounded truncate bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100"
-                    title={task.name}
-                  >
-                    <span className={`inline-block w-2 h-2 rounded-full mr-1 ${getStatusColor(task.status)}`}></span>
-                    {task.name}
-                  </div>
-                ))}
-                {dayTasks.length > 3 && (
-                  <div className="text-xs text-gray-500 px-1">
-                    +{dayTasks.length - 3}件
-                  </div>
-                )}
+              <div className="space-y-0.5 md:space-y-1">
+                {/* Mobile: Show dots for tasks */}
+                <div className="md:hidden flex gap-0.5 flex-wrap">
+                  {dayTasks.slice(0, 4).map((task) => (
+                    <span
+                      key={task.id}
+                      className={`w-1.5 h-1.5 rounded-full ${getStatusColor(task.status)}`}
+                      title={task.name}
+                    />
+                  ))}
+                  {dayTasks.length > 4 && (
+                    <span className="text-[8px] text-gray-500">+{dayTasks.length - 4}</span>
+                  )}
+                </div>
+                {/* Desktop: Show task names */}
+                <div className="hidden md:block space-y-1">
+                  {dayTasks.slice(0, 3).map((task) => (
+                    <div
+                      key={task.id}
+                      className="text-xs px-1 py-0.5 rounded truncate bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100"
+                      title={task.name}
+                    >
+                      <span className={`inline-block w-2 h-2 rounded-full mr-1 ${getStatusColor(task.status)}`}></span>
+                      {task.name}
+                    </div>
+                  ))}
+                  {dayTasks.length > 3 && (
+                    <div className="text-xs text-gray-500 px-1">
+                      +{dayTasks.length - 3}件
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -124,24 +140,24 @@ export default function Calendar() {
       </div>
 
       {selectedDate && (
-        <Card>
+        <Card className="border-0 md:border shadow-none md:shadow-sm">
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="text-base md:text-lg">
               {format(selectedDate, 'yyyy年M月d日(E)', { locale: ja })} のタスク
             </CardTitle>
           </CardHeader>
           <CardContent>
             {selectedDateTasks.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">この日のタスクはありません</p>
+              <p className="text-gray-500 text-center py-4 text-sm">この日のタスクはありません</p>
             ) : (
               <div className="space-y-3">
                 {selectedDateTasks.map((task, index) => (
-                  <div key={task.id} className="border border-blue-100 rounded-lg p-4 bg-white/80 backdrop-blur-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="text-lg font-bold text-gray-400">#{index + 1}</div>
+                  <div key={task.id} className="border border-blue-100 rounded-lg p-3 md:p-4 bg-white/80 backdrop-blur-sm">
+                    <div className="flex items-start gap-2 md:gap-3">
+                      <div className="text-base md:text-lg font-bold text-gray-400">#{index + 1}</div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-lg mb-2">{task.name}</h4>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
+                        <h4 className="font-medium text-base md:text-lg mb-2">{task.name}</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                           <div>
                             <span className="text-gray-500">顧客:</span> {task.customer}
                           </div>
