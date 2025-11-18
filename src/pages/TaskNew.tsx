@@ -14,7 +14,7 @@ export default function TaskNew() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { addTask, tasks } = useTaskStore();
-  const { categories } = useSettingsStore();
+  const { categories, products } = useSettingsStore();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -110,12 +110,11 @@ export default function TaskNew() {
                 onChange={(e) => setFormData({ ...formData, product: e.target.value as TaskProduct })}
               >
                 <option value="">{t('selectNone')}</option>
-                <option value="Copilot Studio">Copilot Studio</option>
-                <option value="Power Apps">Power Apps</option>
-                <option value="Power Automate">Power Automate</option>
-                <option value="PAD">PAD</option>
-                <option value="Power Pages">Power Pages</option>
-                <option value="Power Platform">Power Platform</option>
+                {products.map((product) => (
+                  <option key={product} value={product}>
+                    {product}
+                  </option>
+                ))}
               </Select>
             </div>
 
