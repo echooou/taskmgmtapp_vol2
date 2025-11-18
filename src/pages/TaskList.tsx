@@ -5,10 +5,11 @@ import { useTranslation } from '../i18n/useTranslation';
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Task } from '../types/task';
+import { Task, TaskStatus } from '../types/task';
 import { GripVertical, X } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { Select } from '../components/ui/select';
 
 interface SortableTaskItemProps {
   task: Task;
@@ -54,8 +55,8 @@ function SortableTaskItem({ task, onSelect, isSelected }: SortableTaskItemProps)
         <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
           <GripVertical className="h-5 w-5 text-gray-400" />
         </div>
-        <div className="flex-1 grid grid-cols-7 gap-4 items-center">
-          <div className="col-span-2 font-medium">{task.name}</div>
+        <div className={`flex-1 grid grid-cols-7 gap-4 items-center ${task.status === '完了' ? 'opacity-60' : ''}`}>
+          <div className={`col-span-2 font-medium ${task.status === '完了' ? 'line-through' : ''}`}>{task.name}</div>
           <div className="text-sm text-gray-600">{task.customer}</div>
           <div className="text-sm">
             <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(task.status)}`}>
@@ -71,10 +72,10 @@ function SortableTaskItem({ task, onSelect, isSelected }: SortableTaskItemProps)
       </div>
 
       {/* Mobile Layout */}
-      <div className="md:hidden space-y-2">
+      <div className={`md:hidden space-y-2 ${task.status === '完了' ? 'opacity-60' : ''}`}>
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="font-medium text-base mb-1">{task.name}</div>
+            <div className={`font-medium text-base mb-1 ${task.status === '完了' ? 'line-through' : ''}`}>{task.name}</div>
             <div className="text-sm text-gray-600">{task.customer}</div>
           </div>
           <span className={`px-2 py-1 rounded-full text-xs whitespace-nowrap ml-2 ${getStatusColor(task.status)}`}>
@@ -96,10 +97,15 @@ function SortableTaskItem({ task, onSelect, isSelected }: SortableTaskItemProps)
 export default function TaskList() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { tasks, reorderTasks, selectedTaskId, setSelectedTask, getTaskById, deleteTask } = useTaskStore();
+  const { tasks, reorderTasks, selectedTaskId, setSelectedTask, getTaskById, deleteTask, updateTask } = useTaskStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const sortedTasks = [...tasks].sort((a, b) => a.priority - b.priority);
+  const sortedTasks = [...tasks].sort((a, b) => {
+    // 完了タスクを最下位に
+    if (a.status === '完了' && b.status !== '完了') return 1;
+    if (a.status !== '完了' && b.status === '完了') return -1;
+    return a.priority - b.priority;
+  });
   const selectedTask = selectedTaskId ? getTaskById(selectedTaskId) : null;
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -209,7 +215,16 @@ export default function TaskList() {
 
               <div>
                 <label className="text-sm font-medium text-gray-500">{t('status')}</label>
-                <p className="mt-1 text-base">{selectedTask.status}</p>
+                <Select
+                  value={selectedTask.status}
+                  onChange={(e) => updateTask(selectedTaskId, { status: e.target.value as TaskStatus })}
+                  className="mt-1"
+                >
+                  <option value="未着手">{t('notStarted')}</option>
+                  <option value="進行中">{t('inProgress')}</option>
+                  <option value="完了">{t('completed')}</option>
+                  <option value="保留">{t('onHold')}</option>
+                </Select>
               </div>
 
               <div>
