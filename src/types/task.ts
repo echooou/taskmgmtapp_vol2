@@ -15,6 +15,7 @@ export interface Task {
   status: TaskStatus;
   workload: number; // 工数(時間)
   relatedTasks: string[]; // 関連タスクのID配列
+  relatedProjects: string[]; // 関連案件のID配列
   memo: string;
   priority: number; // 優先順位(小さいほど優先)
   createdAt: string;

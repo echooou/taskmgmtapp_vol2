@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '../store/projectStore';
+import { useSettingsStore } from '../store/settingsStore';
 import { useTranslation } from '../i18n/useTranslation';
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Project } from '../types/project';
-import { GripVertical, X } from 'lucide-react';
+import { GripVertical, X, Filter } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { Select } from '../components/ui/select';
 
 interface SortableProjectItemProps {
   project: Project;
@@ -79,7 +81,17 @@ export default function ProjectList() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { projects, reorderProjects, selectedProjectId, setSelectedProject, getProjectById, deleteProject } = useProjectStore();
+  const { categories, products } = useSettingsStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterProduct, setFilterProduct] = useState<string>('all');
+
+  // フィルター適用
+  const filteredProjects = projects.filter(project => {
+    if (filterCategory !== 'all' && project.category !== filterCategory) return false;
+    if (filterProduct !== 'all' && project.product !== filterProduct) return false;
+    return true;
+  });
 
   const selectedProject = selectedProjectId ? getProjectById(selectedProjectId) : null;
 
@@ -87,10 +99,10 @@ export default function ProjectList() {
     const { active, over } = event;
     
     if (over && active.id !== over.id) {
-      const oldIndex = projects.findIndex((p) => p.id === active.id);
-      const newIndex = projects.findIndex((p) => p.id === over.id);
+      const oldIndex = filteredProjects.findIndex((p) => p.id === active.id);
+      const newIndex = filteredProjects.findIndex((p) => p.id === over.id);
       
-      const newOrder = [...projects];
+      const newOrder = [...filteredProjects];
       const [movedProject] = newOrder.splice(oldIndex, 1);
       newOrder.splice(newIndex, 0, movedProject);
 
@@ -132,8 +144,36 @@ export default function ProjectList() {
           </Button>
         </div>
 
+        {/* Filters */}
+        <div className="mb-6 bg-white/80 backdrop-blur-sm border border-blue-100 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter className="h-5 w-5 text-gray-500" />
+            <h3 className="font-medium text-gray-700">{t('filter')}</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">{t('category')}</label>
+              <Select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+                <option value="all">{t('all')}</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">{t('product')}</label>
+              <Select value={filterProduct} onChange={(e) => setFilterProduct(e.target.value)}>
+                <option value="all">{t('all')}</option>
+                {products.map((prod) => (
+                  <option key={prod} value={prod}>{prod}</option>
+                ))}
+              </Select>
+            </div>
+          </div>
+        </div>
+
         {/* Project List */}
-        {projects.length === 0 ? (
+        {filteredProjects.length === 0 ? (
           <div className="text-center py-16 md:py-20">
             <div className="text-gray-400 mb-6">
               <svg className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,8 +198,8 @@ export default function ProjectList() {
 
             {/* Sortable Project List */}
             <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={projects.map(p => p.id)} strategy={verticalListSortingStrategy}>
-                {projects.map((project) => (
+              <SortableContext items={filteredProjects.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                {filteredProjects.map((project) => (
                   <SortableProjectItem
                     key={project.id}
                     project={project}
@@ -198,6 +238,11 @@ export default function ProjectList() {
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-1">{t('description')}</label>
                   <p className="text-gray-700 whitespace-pre-wrap">{selectedProject.description || '-'}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('ssp')}</label>
+                  <p className="text-gray-700">{selectedProject.ssp || '-'}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -290,6 +335,11 @@ export default function ProjectList() {
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-1">{t('description')}</label>
                   <p className="text-gray-700 whitespace-pre-wrap">{selectedProject.description || '-'}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('ssp')}</label>
+                  <p className="text-gray-700">{selectedProject.ssp || '-'}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

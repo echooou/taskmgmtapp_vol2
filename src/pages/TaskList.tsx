@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTaskStore } from '../store/taskStore';
+import { useProjectStore } from '../store/projectStore';
+import { useSettingsStore } from '../store/settingsStore';
 import { useTranslation } from '../i18n/useTranslation';
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Task, TaskStatus } from '../types/task';
-import { GripVertical, X } from 'lucide-react';
+import { GripVertical, X, Filter } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
 
@@ -97,9 +99,22 @@ export default function TaskList() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { tasks, reorderTasks, selectedTaskId, setSelectedTask, getTaskById, deleteTask, updateTask } = useTaskStore();
+  const { projects, getProjectById } = useProjectStore();
+  const { categories, products } = useSettingsStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterProduct, setFilterProduct] = useState<string>('all');
 
-  const sortedTasks = [...tasks].sort((a, b) => {
+  // フィルター適用
+  const filteredTasks = tasks.filter(task => {
+    if (filterStatus !== 'all' && task.status !== filterStatus) return false;
+    if (filterCategory !== 'all' && task.category !== filterCategory) return false;
+    if (filterProduct !== 'all' && task.product !== filterProduct) return false;
+    return true;
+  });
+
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
     // 完了タスクを最下位に
     if (a.status === '完了' && b.status !== '完了') return 1;
     if (a.status !== '完了' && b.status === '完了') return -1;
@@ -154,6 +169,44 @@ export default function TaskList() {
           <Button onClick={() => navigate('/new')} className="shadow-lg">
             + {t('newTask')}
           </Button>
+        </div>
+
+        {/* Filters */}
+        <div className="mb-6 bg-white/80 backdrop-blur-sm border border-blue-100 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter className="h-5 w-5 text-gray-500" />
+            <h3 className="font-medium text-gray-700">{t('filter')}</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">{t('status')}</label>
+              <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                <option value="all">{t('all')}</option>
+                <option value="未着手">{t('notStarted')}</option>
+                <option value="進行中">{t('inProgress')}</option>
+                <option value="完了">{t('completed')}</option>
+                <option value="保留">{t('onHold')}</option>
+              </Select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">{t('category')}</label>
+              <Select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+                <option value="all">{t('all')}</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">{t('product')}</label>
+              <Select value={filterProduct} onChange={(e) => setFilterProduct(e.target.value)}>
+                <option value="all">{t('all')}</option>
+                {products.map((prod) => (
+                  <option key={prod} value={prod}>{prod}</option>
+                ))}
+              </Select>
+            </div>
+          </div>
         </div>
 
         {/* Task List */}
@@ -274,6 +327,22 @@ export default function TaskList() {
                         return relatedTask ? (
                           <p key={taskId} className="text-sm text-blue-600">
                             {relatedTask.name}
+                          </p>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {selectedTask.relatedProjects && selectedTask.relatedProjects.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('relatedProjects')}</label>
+                    <div className="space-y-1">
+                      {selectedTask.relatedProjects.map((projectId) => {
+                        const relatedProject = getProjectById(projectId);
+                        return relatedProject ? (
+                          <p key={projectId} className="text-sm text-purple-600">
+                            {relatedProject.accountName}
                           </p>
                         ) : null;
                       })}
@@ -402,6 +471,22 @@ export default function TaskList() {
                         return relatedTask ? (
                           <p key={taskId} className="text-sm text-blue-600">
                             {relatedTask.name}
+                          </p>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {selectedTask.relatedProjects && selectedTask.relatedProjects.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('relatedProjects')}</label>
+                    <div className="space-y-1">
+                      {selectedTask.relatedProjects.map((projectId) => {
+                        const relatedProject = getProjectById(projectId);
+                        return relatedProject ? (
+                          <p key={projectId} className="text-sm text-purple-600">
+                            {relatedProject.accountName}
                           </p>
                         ) : null;
                       })}

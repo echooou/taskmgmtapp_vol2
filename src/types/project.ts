@@ -6,6 +6,7 @@ export interface Project {
   id: string;
   accountName: string; // アカウント名
   description: string; // 詳細
+  ssp: string; // 担当営業
   startDate: string;
   endDate: string;
   category: ProjectCategory;

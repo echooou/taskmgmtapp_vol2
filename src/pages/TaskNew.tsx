@@ -31,12 +31,14 @@ export default function TaskNew() {
     status: '未着手' as TaskStatus,
     workload: 0,
     relatedTasks: [] as string[],
+    relatedProjects: [] as string[],
     memo: '',
   });
 
   const [projectFormData, setProjectFormData] = useState({
     accountName: '',
     description: '',
+    ssp: '',
     category: (categories && categories.length > 0 ? categories[0] : '公共') as ProjectCategory,
     product: '' as ProjectProduct,
     startDate: '',
@@ -96,6 +98,17 @@ export default function TaskNew() {
       }
     }
     setTaskFormData({ ...taskFormData, relatedTasks: selected });
+  };
+
+  const handleTaskRelatedProjectsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const options = e.target.options;
+    const selected: string[] = [];
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        selected.push(options[i].value);
+      }
+    }
+    setTaskFormData({ ...taskFormData, relatedProjects: selected });
   };
 
   const handleProjectRelatedTasksChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -254,6 +267,23 @@ export default function TaskNew() {
               </div>
 
               <div>
+                <label className="block text-sm font-medium mb-2">{t('relatedProjects')}</label>
+                <Select
+                  multiple
+                  size={5}
+                  onChange={handleTaskRelatedProjectsChange}
+                  className="h-auto"
+                >
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.accountName}
+                    </option>
+                  ))}
+                </Select>
+                <p className="text-sm text-gray-500 mt-1">{t('multiSelectHint')}</p>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium mb-2">{t('memo')}</label>
                 <Textarea
                   value={taskFormData.memo}
@@ -294,6 +324,15 @@ export default function TaskNew() {
                   onChange={(e) => setProjectFormData({ ...projectFormData, description: e.target.value })}
                   placeholder={t('descriptionPlaceholder')}
                   rows={4}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">{t('ssp')}</label>
+                <Input
+                  value={projectFormData.ssp}
+                  onChange={(e) => setProjectFormData({ ...projectFormData, ssp: e.target.value })}
+                  placeholder={t('sspPlaceholder')}
                 />
               </div>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTaskStore } from '../store/taskStore';
+import { useProjectStore } from '../store/projectStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { useTranslation } from '../i18n/useTranslation';
 import { TaskStatus, TaskCategory, TaskProduct } from '../types/task';
@@ -15,6 +16,7 @@ export default function TaskEdit() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { getTaskById, updateTask, tasks } = useTaskStore();
+  const { projects } = useProjectStore();
   const { categories, products } = useSettingsStore();
   
   const task = id ? getTaskById(id) : null;
@@ -29,6 +31,7 @@ export default function TaskEdit() {
     status: '未着手' as TaskStatus,
     workload: 0,
     relatedTasks: [] as string[],
+    relatedProjects: [] as string[],
     memo: '',
   });
 
@@ -44,6 +47,7 @@ export default function TaskEdit() {
         status: task.status,
         workload: task.workload,
         relatedTasks: task.relatedTasks,
+        relatedProjects: task.relatedProjects || [],
         memo: task.memo,
       });
     } else if (id) {
@@ -75,6 +79,17 @@ export default function TaskEdit() {
       }
     }
     setFormData({ ...formData, relatedTasks: selected });
+  };
+
+  const handleRelatedProjectsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const options = e.target.options;
+    const selected: string[] = [];
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        selected.push(options[i].value);
+      }
+    }
+    setFormData({ ...formData, relatedProjects: selected });
   };
 
   if (!task) {
@@ -195,6 +210,24 @@ export default function TaskEdit() {
                 {tasks.filter(t => t.id !== id).map((task) => (
                   <option key={task.id} value={task.id}>
                     {task.name}
+                  </option>
+                ))}
+              </Select>
+              <p className="text-sm text-gray-500 mt-1">{t('multiSelectHint')}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">{t('relatedProjects')}</label>
+              <Select
+                multiple
+                size={5}
+                value={formData.relatedProjects}
+                onChange={handleRelatedProjectsChange}
+                className="h-auto"
+              >
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.accountName}
                   </option>
                 ))}
               </Select>
