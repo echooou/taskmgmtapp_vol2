@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import TaskNew from './pages/TaskNew'
 import TaskEdit from './pages/TaskEdit'
 import TaskList from './pages/TaskList'
+import ProjectList from './pages/ProjectList'
 import Calendar from './pages/Calendar'
 import Settings from './pages/Settings'
 import './App.css'
@@ -12,6 +13,7 @@ function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<TaskList />} />
+        <Route path="/projects" element={<ProjectList />} />
         <Route path="/new" element={<TaskNew />} />
         <Route path="/task/edit/:id" element={<TaskEdit />} />
         <Route path="/calendar" element={<Calendar />} />

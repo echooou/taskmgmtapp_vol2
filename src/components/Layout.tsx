@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutList, Plus, Calendar, Settings } from 'lucide-react';
+import { LayoutList, Briefcase, Plus, Calendar, Settings } from 'lucide-react';
 import { useTranslation } from '../i18n/useTranslation';
 
 interface LayoutProps {
@@ -13,6 +13,7 @@ export default function Layout({ children }: LayoutProps) {
 
   const navItems = [
     { path: '/', label: t('taskList'), icon: LayoutList },
+    { path: '/projects', label: t('projectList'), icon: Briefcase },
     { path: '/new', label: t('newTask'), icon: Plus },
     { path: '/calendar', label: t('calendar'), icon: Calendar },
     { path: '/settings', label: t('settings'), icon: Settings },
@@ -62,7 +63,7 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-lg border-t border-blue-100 z-50">
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-5 gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;

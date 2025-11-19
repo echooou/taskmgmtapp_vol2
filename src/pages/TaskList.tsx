@@ -7,7 +7,6 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import { Task, TaskStatus } from '../types/task';
 import { GripVertical, X } from 'lucide-react';
-import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
 
@@ -129,142 +128,310 @@ export default function TaskList() {
   };
 
   const handleCloseSidebar = () => {
-    setSelectedTask(null);
     setSidebarOpen(false);
+    setTimeout(() => setSelectedTask(null), 300);
   };
 
-  const handleDeleteTask = () => {
-    if (selectedTaskId) {
-      deleteTask(selectedTaskId);
+  const handleEdit = () => {
+    if (selectedTask) {
+      navigate(`/task/edit/${selectedTask.id}`);
+    }
+  };
+
+  const handleDelete = () => {
+    if (selectedTask && confirm(t('confirmDeleteTask'))) {
+      deleteTask(selectedTask.id);
       handleCloseSidebar();
     }
   };
 
   return (
-    <div className="flex gap-6">
-      <div className={`flex-1 transition-all ${sidebarOpen ? 'md:mr-96' : ''}`}>
-        <div className="mb-4 md:mb-6">
-          <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">{t('taskList')}</h2>
-          {/* Desktop Header */}
-          <div className="hidden md:grid grid-cols-7 gap-4 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg text-sm font-medium text-gray-700">
-            <div className="col-span-2 pl-11">{t('taskName')}</div>
-            <div>{t('customer')}</div>
-            <div>{t('status')}</div>
-            <div>{t('category')}</div>
-            <div>{t('period')}</div>
-            <div>{t('workload')}</div>
-          </div>
+    <div className="relative h-full overflow-hidden">
+      <div className="max-w-6xl mx-auto p-4 md:p-6 pb-20 md:pb-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{t('taskList')}</h1>
+          <Button onClick={() => navigate('/new')} className="shadow-lg">
+            + {t('newTask')}
+          </Button>
         </div>
 
+        {/* Task List */}
         {tasks.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            {t('noTasks')}
+          <div className="text-center py-16 md:py-20">
+            <div className="text-gray-400 mb-6">
+              <svg className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              <p className="text-lg md:text-xl font-medium">{t('noTasks')}</p>
+            </div>
+            <Button onClick={() => navigate('/new')} size="lg">
+              {t('newTask')}
+            </Button>
           </div>
         ) : (
-          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={sortedTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-              {sortedTasks.map((task) => (
-                <SortableTaskItem
-                  key={task.id}
-                  task={task}
-                  onSelect={handleSelectTask}
-                  isSelected={selectedTaskId === task.id}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
+          <div className="space-y-2">
+            {/* Desktop Table Header */}
+            <div className="hidden md:grid grid-cols-7 gap-4 px-4 py-2 text-sm font-medium text-gray-500 border-b">
+              <div className="col-span-2">{t('taskName')}</div>
+              <div>{t('customer')}</div>
+              <div>{t('status')}</div>
+              <div>{t('category')}</div>
+              <div>{t('period')}</div>
+              <div>{t('workload')}</div>
+            </div>
+
+            {/* Sortable Task List */}
+            <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={sortedTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+                {sortedTasks.map((task) => (
+                  <SortableTaskItem
+                    key={task.id}
+                    task={task}
+                    onSelect={handleSelectTask}
+                    isSelected={selectedTaskId === task.id}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          </div>
         )}
       </div>
 
-      {sidebarOpen && selectedTask && (
-        <div className="fixed inset-0 md:right-0 md:left-auto md:top-0 md:h-full md:w-96 bg-gradient-to-b from-blue-50/95 to-purple-50/95 backdrop-blur-md shadow-xl md:border-l border-blue-100 p-4 md:p-6 overflow-y-auto z-50">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold">{t('taskDetails')}</h3>
-            <button onClick={handleCloseSidebar} className="text-gray-500 hover:text-gray-700">
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-
-          <Card>
-            <CardContent className="space-y-4 pt-6">
-              <div>
-                <label className="text-sm font-medium text-gray-500">{t('taskName')}</label>
-                <p className="mt-1 text-base">{selectedTask.name}</p>
+      {/* Sidebar - Desktop */}
+      {selectedTask && (
+        <div className="hidden md:block">
+          <div
+            className={`fixed top-0 right-0 h-full w-96 bg-white shadow-2xl transform transition-transform duration-300 ${
+              sidebarOpen ? 'translate-x-0' : 'translate-x-full'
+            } z-50`}
+          >
+            <div className="h-full flex flex-col">
+              <div className="flex justify-between items-center p-6 border-b">
+                <h2 className="text-xl font-bold">{t('taskDetails')}</h2>
+                <button onClick={handleCloseSidebar} className="text-gray-400 hover:text-gray-600">
+                  <X className="h-6 w-6" />
+                </button>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-500">{t('customer')}</label>
-                <p className="mt-1 text-base">{selectedTask.customer}</p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-500">{t('category')}</label>
-                <p className="mt-1 text-base">{selectedTask.category}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">{t('startDate')}</label>
-                  <p className="mt-1 text-base">{selectedTask.startDate}</p>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('taskName')}</label>
+                  <p className="text-lg font-medium">{selectedTask.name}</p>
                 </div>
+
                 <div>
-                  <label className="text-sm font-medium text-gray-500">{t('dueDate')}</label>
-                  <p className="mt-1 text-base">{selectedTask.dueDate}</p>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('customer')}</label>
+                  <p className="text-gray-700">{selectedTask.customer}</p>
                 </div>
-              </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-500">{t('status')}</label>
-                <Select
-                  value={selectedTask.status}
-                  onChange={(e) => updateTask(selectedTaskId, { status: e.target.value as TaskStatus })}
-                  className="mt-1"
-                >
-                  <option value="未着手">{t('notStarted')}</option>
-                  <option value="進行中">{t('inProgress')}</option>
-                  <option value="完了">{t('completed')}</option>
-                  <option value="保留">{t('onHold')}</option>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-500">{t('workload')}</label>
-                <p className="mt-1 text-base">{selectedTask.workload}{t('hours')}</p>
-              </div>
-
-              {selectedTask.relatedTasks.length > 0 && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">{t('relatedTasks')}</label>
-                  <div className="mt-1 space-y-1">
-                    {selectedTask.relatedTasks.map((taskId) => {
-                      const relatedTask = getTaskById(taskId);
-                      return relatedTask ? (
-                        <p key={taskId} className="text-sm text-blue-600">
-                          {relatedTask.name}
-                        </p>
-                      ) : null;
-                    })}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('category')}</label>
+                    <p className="text-gray-700">{selectedTask.category}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('product')}</label>
+                    <p className="text-gray-700">{selectedTask.product || '-'}</p>
                   </div>
                 </div>
-              )}
 
-              {selectedTask.memo && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">{t('memo')}</label>
-                  <p className="mt-1 text-base whitespace-pre-wrap">{selectedTask.memo}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('startDate')}</label>
+                    <p className="text-gray-700">{selectedTask.startDate}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('dueDate')}</label>
+                    <p className="text-gray-700">{selectedTask.dueDate}</p>
+                  </div>
                 </div>
-              )}
 
-              <div className="pt-4 space-y-2">
-                <Button variant="outline" className="w-full" onClick={() => navigate(`/task/edit/${selectedTaskId}`)}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('status')}</label>
+                  <Select
+                    value={selectedTask.status}
+                    onChange={(e) => selectedTask && updateTask(selectedTask.id, { status: e.target.value as TaskStatus })}
+                  >
+                    <option value="未着手">{t('notStarted')}</option>
+                    <option value="進行中">{t('inProgress')}</option>
+                    <option value="完了">{t('completed')}</option>
+                    <option value="保留">{t('onHold')}</option>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('workload')}</label>
+                  <p className="text-gray-700">{selectedTask.workload}{t('hours')}</p>
+                </div>
+
+                {selectedTask.relatedTasks.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('relatedTasks')}</label>
+                    <div className="space-y-1">
+                      {selectedTask.relatedTasks.map((taskId) => {
+                        const relatedTask = getTaskById(taskId);
+                        return relatedTask ? (
+                          <p key={taskId} className="text-sm text-blue-600">
+                            {relatedTask.name}
+                          </p>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {selectedTask.memo && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('memo')}</label>
+                    <p className="text-gray-700 whitespace-pre-wrap">{selectedTask.memo}</p>
+                  </div>
+                )}
+
+                <div className="text-sm text-gray-500">
+                  <p>{t('createdAt')}: {new Date(selectedTask.createdAt).toLocaleString()}</p>
+                  <p>{t('updatedAt')}: {new Date(selectedTask.updatedAt).toLocaleString()}</p>
+                </div>
+              </div>
+
+              <div className="p-6 border-t space-y-3">
+                <Button onClick={handleEdit} variant="outline" className="w-full">
                   {t('editTask')}
                 </Button>
-                <Button variant="destructive" className="w-full" onClick={handleDeleteTask}>
+                <Button onClick={handleDelete} variant="destructive" className="w-full">
                   {t('deleteTask')}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black bg-opacity-30 z-40"
+              onClick={handleCloseSidebar}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Bottom Sheet - Mobile */}
+      {selectedTask && (
+        <div className="md:hidden">
+          <div
+            className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${
+              sidebarOpen ? 'bg-opacity-30' : 'bg-opacity-0 pointer-events-none'
+            }`}
+            onClick={handleCloseSidebar}
+          />
+          
+          <div
+            className={`fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 z-50 ${
+              sidebarOpen ? 'translate-y-0' : 'translate-y-full'
+            }`}
+            style={{ maxHeight: '85vh' }}
+          >
+            <div className="h-full flex flex-col">
+              <div className="flex justify-center pt-3 pb-2">
+                <div className="w-12 h-1 bg-gray-300 rounded-full" />
+              </div>
+
+              <div className="flex justify-between items-center px-6 pb-4">
+                <h2 className="text-xl font-bold">{t('taskDetails')}</h2>
+                <button onClick={handleCloseSidebar} className="text-gray-400">
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('taskName')}</label>
+                  <p className="text-lg font-medium">{selectedTask.name}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('customer')}</label>
+                  <p className="text-gray-700">{selectedTask.customer}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('category')}</label>
+                    <p className="text-gray-700">{selectedTask.category}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('product')}</label>
+                    <p className="text-gray-700">{selectedTask.product || '-'}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('startDate')}</label>
+                    <p className="text-gray-700">{selectedTask.startDate}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('dueDate')}</label>
+                    <p className="text-gray-700">{selectedTask.dueDate}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('status')}</label>
+                  <Select
+                    value={selectedTask.status}
+                    onChange={(e) => selectedTask && updateTask(selectedTask.id, { status: e.target.value as TaskStatus })}
+                  >
+                    <option value="未着手">{t('notStarted')}</option>
+                    <option value="進行中">{t('inProgress')}</option>
+                    <option value="完了">{t('completed')}</option>
+                    <option value="保留">{t('onHold')}</option>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">{t('workload')}</label>
+                  <p className="text-gray-700">{selectedTask.workload}{t('hours')}</p>
+                </div>
+
+                {selectedTask.relatedTasks.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('relatedTasks')}</label>
+                    <div className="space-y-1">
+                      {selectedTask.relatedTasks.map((taskId) => {
+                        const relatedTask = getTaskById(taskId);
+                        return relatedTask ? (
+                          <p key={taskId} className="text-sm text-blue-600">
+                            {relatedTask.name}
+                          </p>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {selectedTask.memo && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('memo')}</label>
+                    <p className="text-gray-700 whitespace-pre-wrap">{selectedTask.memo}</p>
+                  </div>
+                )}
+
+                <div className="text-sm text-gray-500">
+                  <p>{t('createdAt')}: {new Date(selectedTask.createdAt).toLocaleString()}</p>
+                  <p>{t('updatedAt')}: {new Date(selectedTask.updatedAt).toLocaleString()}</p>
+                </div>
+              </div>
+
+              <div className="p-6 border-t space-y-3 bg-white">
+                <Button onClick={handleEdit} variant="outline" className="w-full">
+                  {t('editTask')}
+                </Button>
+                <Button onClick={handleDelete} variant="destructive" className="w-full">
+                  {t('deleteTask')}
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
